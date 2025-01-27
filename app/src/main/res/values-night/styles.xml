@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bottom Navigation Active Text Style -->
+    <style name="TextAppearance.App.BottomNavigation.Active" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/bottom_navigation_active</item>
+    </style>
+
+    <!-- Bottom Navigation Inactive Text Style -->
+    <style name="TextAppearance.App.BottomNavigation.Inactive" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/bottom_navigation_inactive</item>
+    </style>
+</resources>
