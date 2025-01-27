@@ -1,0 +1,72 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk location, etc.)
+local.properties
+
+# Android Studio specific files
+*.iml
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Log files
+*.log
+
+# Generated binary files
+*.apk
+*.ap_
+*.dex
+
+# Keystore files (security sensitive files)
+*.keystore
+*.jks
+
+# Crashlytics and Fabric settings
+crashlytics.properties
+fabric.properties
+
+# ProGuard
+proguard/
+
+# NDK
+obj/
+
+# IntelliJ
+out/
+
+# Gradle Wrapper
+gradle/wrapper/gradle-wrapper.properties
+
+# Files for linting and IDE settings
+.idea/codeStyles/
+.idea/inspectionProfiles/
+*.iws
+*.ipr
+
+# MacOS-specific files
+.DS_Store
+
+# Windows-specific files
+Thumbs.db
+
+# Dependency caching directories
+**/node_modules/
+**/bower_components/
+
+# Coverage reports
+*.ec
+*.exec
+
+# External Native Build and captures
+.externalNativeBuild/
+.cxx/
+captures/
+
+# Custom configuration files
+custom_rules.xml
