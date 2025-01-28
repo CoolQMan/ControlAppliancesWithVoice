@@ -1,9 +1,12 @@
 package com.team17.controlapplianceswithvoice;
 
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -13,18 +16,18 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
-
+    ApplianceDatabaseHelper dbHelper;
+    RecyclerApplianceAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ApplianceDatabaseHelper dbHelper = new ApplianceDatabaseHelper(this);
+        adapter = new RecyclerApplianceAdapter(this, new DashboardFragment()::changeName);
+        dbHelper = new ApplianceDatabaseHelper(this);
 
-        // Initialize BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // Set default fragment (DashboardFragment) when activity is created
         if (savedInstanceState == null) {
             loadFragment(new DashboardFragment());
         }
@@ -73,6 +76,28 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             super.onBackPressed();
+        }
+    }
+
+
+    //TODO: Finish this
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.action_bar_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if(item.getItemId() == R.id.refresh_button){
+            Toast.makeText(this, "Refreshed status of all appliances", Toast.LENGTH_SHORT).show();
+            adapter.arrayList = dbHelper.getAllAppliances();
+            adapter.notifyDataSetChanged();
+            return true;
+        } else{
+            return super.onOptionsItemSelected(item);
         }
     }
 }

@@ -44,7 +44,6 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_NAME, appliance.getApplianceName());
         values.put(COLUMN_STATUS, appliance.getStatus() ? 1 : 0);
         long result = db.insert(TABLE_APPLIANCES, null, values);
-        db.close();
         return result;
     }
 
@@ -52,7 +51,6 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
     public int removeAppliance(int applianceId) {
         SQLiteDatabase db = this.getWritableDatabase();
         int rowsDeleted = db.delete(TABLE_APPLIANCES, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
-        db.close();
         return rowsDeleted;
     }
 
@@ -62,7 +60,6 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, newName);
         int rowsUpdated = db.update(TABLE_APPLIANCES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
-        db.close();
         return rowsUpdated;
     }
 
@@ -81,14 +78,13 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
 
             int rowsUpdated = db.update(TABLE_APPLIANCES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
             cursor.close();
-            db.close();
+
             return rowsUpdated;
         }
 
         if (cursor != null) {
             cursor.close();
         }
-        db.close();
         return 0; // No rows updated
     }
 
@@ -110,8 +106,6 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-
-        db.close();
         return applianceList;
     }
 }

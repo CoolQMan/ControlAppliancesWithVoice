@@ -15,12 +15,13 @@ import java.util.ArrayList;
 
 public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerApplianceAdapter.ViewHolder> {
     Context context;
+    private OnItemLongClickListener longClickListener;
     ApplianceDatabaseHelper databaseHelper;
     ArrayList<ApplianceModel>arrayList;
-    RecyclerApplianceAdapter(Context context){
+    RecyclerApplianceAdapter(Context context, OnItemLongClickListener longClickListener){
         this.context = context;
         databaseHelper = new ApplianceDatabaseHelper(context);
-
+        this.longClickListener = longClickListener;
         arrayList = databaseHelper.getAllAppliances();
     }
 
@@ -58,6 +59,19 @@ public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerAppli
             appliance_name = itemView.findViewById(R.id.appliance_name);
             appliance_switch = itemView.findViewById(R.id.appliance_switch);
 
+            itemView.setOnLongClickListener(v -> {
+                if(longClickListener != null){
+                    int position = getAdapterPosition();
+                    if(position != RecyclerView.NO_POSITION){
+                        longClickListener.onItemLongClick(position);
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
+    }
+    public interface OnItemLongClickListener {
+        void onItemLongClick(int position);
     }
 }
