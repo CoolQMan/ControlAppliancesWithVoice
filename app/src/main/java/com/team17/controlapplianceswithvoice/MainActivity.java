@@ -1,13 +1,18 @@
 package com.team17.controlapplianceswithvoice;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import android.Manifest;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -15,6 +20,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private BottomNavigationView bottomNavigationView;
     ApplianceDatabaseHelper dbHelper;
     RecyclerApplianceAdapter adapter;
@@ -22,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        requestPermission();
 
         adapter = new RecyclerApplianceAdapter(this, new DashboardFragment()::changeName);
         dbHelper = new ApplianceDatabaseHelper(this);
@@ -79,25 +88,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    //TODO: Finish this
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.action_bar_menu, menu);
         return true;
     }
 
+    //refresh button implementation
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if(item.getItemId() == R.id.refresh_button){
-            Toast.makeText(this, "Refreshed status of all appliances", Toast.LENGTH_SHORT).show();
+        if(item.getItemId() == R.id.refresh_button) {
             adapter.arrayList = dbHelper.getAllAppliances();
             adapter.notifyDataSetChanged();
+            Toast.makeText(this, "Refresh clicked", Toast.LENGTH_SHORT).show();
             return true;
-        } else{
+        } else {
             return super.onOptionsItemSelected(item);
+        }
+    }
+    private boolean hasPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        if (!hasPermission()) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
         }
     }
 }
