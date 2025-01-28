@@ -7,5 +7,6 @@
 
     </style>
 
+
     <style name="Theme.ControlAppliancesWithVoice" parent="Base.Theme.ControlAppliancesWithVoice" />
 </resources>
