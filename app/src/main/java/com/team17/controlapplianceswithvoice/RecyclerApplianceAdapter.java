@@ -15,13 +15,13 @@ import java.util.ArrayList;
 
 public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerApplianceAdapter.ViewHolder> {
     Context context;
+    ApplianceDatabaseHelper databaseHelper;
     ArrayList<ApplianceModel>arrayList;
     RecyclerApplianceAdapter(Context context){
         this.context = context;
-        arrayList = new ArrayList<>();
-        arrayList.add(new ApplianceModel("Light Bulb 1", false));
-        arrayList.add(new ApplianceModel("Light Bulb 2", true));
-        arrayList.add(new ApplianceModel("Fan 1", false));
+        databaseHelper = new ApplianceDatabaseHelper(context);
+
+        arrayList = databaseHelper.getAllAppliances();
     }
 
     @NonNull
@@ -33,8 +33,15 @@ public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerAppli
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.appliance_name.setText(arrayList.get(position).applianceName);
-        holder.appliance_switch.setChecked(arrayList.get(position).status);
+        holder.appliance_name.setText(arrayList.get(position).getApplianceName());
+        holder.appliance_switch.setChecked(arrayList.get(position).getStatus());
+        MaterialSwitch appliance_switch = holder.appliance_switch;
+        appliance_switch.setOnClickListener(v -> {
+            boolean state = appliance_switch.isChecked();
+            arrayList.get(position).setStatus(state);
+            databaseHelper.toggleApplianceStatus(arrayList.get(position).getApplianceId());
+            //TODO: send signal to STM for toggling appliance
+        });
     }
 
     @Override
@@ -53,6 +60,4 @@ public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerAppli
 
         }
     }
-
-
 }

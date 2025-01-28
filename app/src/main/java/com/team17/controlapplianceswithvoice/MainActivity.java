@@ -19,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ApplianceDatabaseHelper dbHelper = new ApplianceDatabaseHelper(this);
+
         // Initialize BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
