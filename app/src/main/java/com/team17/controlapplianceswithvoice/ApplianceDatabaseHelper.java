@@ -25,8 +25,8 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String createTableQuery = "CREATE TABLE " + TABLE_APPLIANCES + " (" +
-                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_NAME + " TEXT NOT NULL, " +
+                COLUMN_ID + " INTEGER PRIMARY KEY , " +
+                COLUMN_NAME + " TEXT NOT NULL UNIQUE, " + // Ensure unique appliance names
                 COLUMN_STATUS + " INTEGER DEFAULT 0);";
         db.execSQL(createTableQuery);
     }
@@ -40,52 +40,63 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
     // 1. Add an Appliance
     public long addAppliance(ApplianceModel appliance) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        // Check if appliance name or ID already exists
+        if (applianceExists(appliance.getApplianceName()) || applianceExists(appliance.getApplianceId())) {
+            return -1; // Error code indicating duplicate name or ID
+        }
+
         ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, appliance.getApplianceId()); // Adding ID
         values.put(COLUMN_NAME, appliance.getApplianceName());
         values.put(COLUMN_STATUS, appliance.getStatus() ? 1 : 0);
-        long result = db.insert(TABLE_APPLIANCES, null, values);
-        return result;
+
+        return db.insert(TABLE_APPLIANCES, null, values);
     }
+
 
     // 2. Remove an Appliance by ID
     public int removeAppliance(int applianceId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        int rowsDeleted = db.delete(TABLE_APPLIANCES, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
-        return rowsDeleted;
+        return db.delete(TABLE_APPLIANCES, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
     }
 
     // 3. Edit Appliance Name by ID
     public int editApplianceName(int applianceId, String newName) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        // Check if new name already exists
+        if (applianceExists(newName)) {
+            return -1; // Error code indicating duplicate name
+        }
+
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, newName);
-        int rowsUpdated = db.update(TABLE_APPLIANCES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
-        return rowsUpdated;
+
+        return db.update(TABLE_APPLIANCES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
     }
 
     // 4. Toggle Appliance Status
     public int toggleApplianceStatus(int applianceId) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        // Fetch current status
         Cursor cursor = db.query(TABLE_APPLIANCES, new String[]{COLUMN_STATUS}, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)}, null, null, null);
-        if (cursor != null && ((android.database.Cursor) cursor).moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             int currentStatus = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STATUS));
-            int newStatus = currentStatus == 1 ? 0 : 1; // Toggle the status
+            int newStatus = currentStatus == 1 ? 0 : 1;
 
             ContentValues values = new ContentValues();
             values.put(COLUMN_STATUS, newStatus);
 
             int rowsUpdated = db.update(TABLE_APPLIANCES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
             cursor.close();
-
             return rowsUpdated;
         }
 
         if (cursor != null) {
             cursor.close();
         }
-        return 0; // No rows updated
+        return 0;
     }
 
     // 5. Fetch All Appliances
@@ -101,11 +112,39 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME));
                 boolean status = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STATUS)) == 1;
 
-                ApplianceModel appliance = new ApplianceModel(id, name, status);
-                applianceList.add(appliance);
+                applianceList.add(new ApplianceModel(id, name, status));
             }
             cursor.close();
         }
         return applianceList;
+    }
+
+    // 6. Check if an appliance name already exists
+    public boolean applianceExists(String applianceName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_APPLIANCES, new String[]{COLUMN_ID}, COLUMN_NAME + " = ?", new String[]{applianceName}, null, null, null);
+
+        boolean exists = (cursor != null && cursor.getCount() > 0);
+        if (cursor != null) {
+            cursor.close();
+        }
+        return exists;
+    }
+
+    public boolean applianceExists(int applianceId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_APPLIANCES, new String[]{COLUMN_ID}, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)}, null, null, null);
+
+        boolean exists = (cursor != null && cursor.getCount() > 0);
+        if (cursor != null) {
+            cursor.close();
+        }
+        return exists;
+    }
+
+    // 7. Delete all appliances
+    public int deleteAllAppliances() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_APPLIANCES, null, null);
     }
 }

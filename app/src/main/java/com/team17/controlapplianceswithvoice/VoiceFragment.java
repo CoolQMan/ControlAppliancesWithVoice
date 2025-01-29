@@ -70,6 +70,8 @@ public class VoiceFragment extends Fragment {
         return v;
     }
 
+
+
     private void setupSpeechRecognizer() {
         // Initialize SpeechRecognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
@@ -104,6 +106,10 @@ public class VoiceFragment extends Fragment {
             public void onError(int error) {
 //                Log.d("voiceResult", "Error occurred: " + error);
                 stopListening();
+                if (speechRecognizer != null) {
+                    speechRecognizer.destroy();
+                }
+                setupSpeechRecognizer();
             }
 
             @Override
@@ -167,13 +173,5 @@ public class VoiceFragment extends Fragment {
         if (!hasPermission()) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-        }
-        super.onDestroy();
     }
 }

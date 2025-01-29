@@ -28,6 +28,17 @@
         android:backgroundTint="@color/colorAccent"
         android:layout_marginBottom="8dp" />
 
+    <EditText
+        android:id="@+id/et_appliance_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter ID of Appliance"
+        android:inputType="number"
+        android:padding="12dp"
+        android:backgroundTint="@color/colorAccent"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
 
     <LinearLayout
         android:layout_width="match_parent"

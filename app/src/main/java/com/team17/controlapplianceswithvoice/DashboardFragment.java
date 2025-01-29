@@ -33,7 +33,6 @@ public class DashboardFragment extends Fragment {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -57,9 +56,12 @@ public class DashboardFragment extends Fragment {
         builder.setView(customView); // Set the custom layout
 
         // Get references to the views in the custom layout
+        EditText etApplianceID = customView.findViewById(R.id.et_appliance_id);
         EditText etApplianceName = customView.findViewById(R.id.et_appliance_name);
         Button btn_cancel = customView.findViewById(R.id.btn_cancel);
         Button btn_ok = customView.findViewById(R.id.btn_ok);
+
+        etApplianceID.setVisibility(View.GONE);
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -88,10 +90,13 @@ public class DashboardFragment extends Fragment {
             String newName = etApplianceName.getText().toString().trim();
             if (!newName.isEmpty()) {
                 int id = dbHelper.getAllAppliances().get(position).getApplianceId();
-                dbHelper.editApplianceName(id, newName);
-                adapter.arrayList = dbHelper.getAllAppliances();
-                adapter.notifyItemChanged(position); // Refresh the item in RecyclerView
-                dialog.dismiss();
+                if(dbHelper.editApplianceName(id, newName) == -1){
+                    Toast.makeText(context, "Appliance with same name already exists", Toast.LENGTH_SHORT).show();
+                } else{
+                    adapter.arrayList = dbHelper.getAllAppliances();
+                    adapter.notifyItemChanged(position); // Refresh the item in RecyclerView
+                    dialog.dismiss();
+                }
             } else {
                 Toast.makeText(context, "Name cannot be empty", Toast.LENGTH_SHORT).show();
             }
@@ -99,4 +104,10 @@ public class DashboardFragment extends Fragment {
         // Set up the Cancel button
         btn_cancel.setOnClickListener(v -> dialog.dismiss());
     }
+
+    public void loadFromDatabase(){
+        adapter.arrayList = dbHelper.getAllAppliances();
+        adapter.notifyDataSetChanged();
+    }
+
 }

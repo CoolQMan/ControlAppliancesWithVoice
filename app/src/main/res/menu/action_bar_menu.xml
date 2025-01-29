@@ -11,10 +11,18 @@
         app:iconTint="@android:color/white"/>
 
     <item
+        android:id="@+id/add_button"
+        android:icon="@drawable/ic_add"
+        android:title="Add Appliance"
+        android:orderInCategory="2"
+        app:showAsAction="always"
+        app:iconTint="@android:color/white"/>
+
+    <item
         android:id="@+id/bluetooth_status"
         android:icon="@drawable/ic_bluetooth_disabled"
         android:title="Bluetooth Status"
-        android:orderInCategory="2"
+        android:orderInCategory="3"
         app:showAsAction="always"
         app:iconTint="@android:color/white"
         android:enabled="false"/>

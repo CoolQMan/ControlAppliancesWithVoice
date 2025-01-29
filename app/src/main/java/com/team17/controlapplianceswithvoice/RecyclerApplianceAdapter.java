@@ -71,6 +71,7 @@ public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerAppli
             });
         }
     }
+
     public interface OnItemLongClickListener {
         void onItemLongClick(int position);
     }
