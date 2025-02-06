@@ -30,7 +30,10 @@ public class VoiceFragment extends Fragment {
     private SpeechRecognizer speechRecognizer;
     private Intent recognizerIntent;
     private boolean isListening = false;
+    String speechRecognize;
 
+    RecyclerApplianceAdapter adapter;
+    ApplianceDatabaseHelper dbHelper;
     Context context;
     ImageButton mic_button;
     TextView mic_status;
@@ -46,6 +49,8 @@ public class VoiceFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_voice, container, false);
         requestPermission();
         context = getContext();
+        dbHelper = new ApplianceDatabaseHelper(getContext());
+        adapter = new RecyclerApplianceAdapter(getContext(), new DashboardFragment()::changeName);
 
         mic_button = v.findViewById(R.id.mic_button);
         mic_status = v.findViewById(R.id.mic_status);
@@ -78,33 +83,27 @@ public class VoiceFragment extends Fragment {
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
             public void onReadyForSpeech(Bundle params) {
-                Log.d("voiceResult", "Ready for speech");
+                mic_status.setText("Listening...");
+                pulse_ring.setVisibility(View.VISIBLE);
+                pulse_ring.startAnimation(AnimationUtils.loadAnimation(context, R.anim.pusle_animation));  // Start pulse animation
             }
 
             @Override
-            public void onBeginningOfSpeech() {
-                Log.d("voiceResult", "Speech beginning");
-            }
+            public void onBeginningOfSpeech() { }
 
             @Override
-            public void onRmsChanged(float rmsdB) {
-                // This can be used to change the pulse size based on voice volume (optional)
-            }
+            public void onRmsChanged(float rmsdB) { }
 
             @Override
-            public void onBufferReceived(byte[] buffer) {
-                // Not needed for this implementation
-            }
+            public void onBufferReceived(byte[] buffer) { }
 
             @Override
             public void onEndOfSpeech() {
-                Log.d("voiceResult", "End of speech");
                 stopListening();
             }
 
             @Override
             public void onError(int error) {
-//                Log.d("voiceResult", "Error occurred: " + error);
                 stopListening();
                 if (speechRecognizer != null) {
                     speechRecognizer.destroy();
@@ -119,8 +118,8 @@ public class VoiceFragment extends Fragment {
                     // Get the list of spoken words
                     ArrayList<String> recognizedWords = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                     if (recognizedWords != null && !recognizedWords.isEmpty()) {
-                        String recognizedSpeech = recognizedWords.get(0);
-                        Log.d("voiceResult", "Recognized Speech: " + recognizedSpeech);
+                        speechRecognize = recognizedWords.get(0);
+                        execVoiceCommand(speechRecognize);
                     }
                 }
             }
@@ -145,10 +144,6 @@ public class VoiceFragment extends Fragment {
 
     private void startListening() {
         if (hasPermission()) {
-            mic_status.setText("Listening...");
-            pulse_ring.setVisibility(View.VISIBLE);
-            pulse_ring.startAnimation(AnimationUtils.loadAnimation(context, R.anim.pusle_animation));  // Start pulse animation
-
             isListening = true;
             speechRecognizer.startListening(recognizerIntent);
         } else {
@@ -164,6 +159,27 @@ public class VoiceFragment extends Fragment {
         isListening = false;
         speechRecognizer.stopListening();
     }
+
+    private void execVoiceCommand(String speechRecognize){
+        String[] speechArray = speechRecognize.split(" ");
+        String firstWord = speechArray[0].toLowerCase();
+        if(!firstWord.equals("turn") && !firstWord.equals("switch")){
+            mic_button.setColorFilter(ContextCompat.getColor(context, R.color.red), android.graphics.PorterDuff.Mode.SRC_IN);
+            // Change the text to "Invalid Command"
+            mic_status.setText("Invalid Command");
+            // Wait for a few seconds, then reset the mic icon and text
+            mic_button.postDelayed(() -> {
+                // Reset the mic icon tint to original color (or default)
+                mic_button.clearColorFilter(); // Removes the color filter (reverts to original)
+                // Reset the text to original
+                mic_status.setText("Tap to Start Listening");
+            }, 3000); // Delay of 3 seconds (3000 milliseconds)
+            return;
+        }
+        ArrayList<ApplianceModel> arrayList = dbHelper.getAllAppliances();
+
+    }
+
 
     private boolean hasPermission() {
         return ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
