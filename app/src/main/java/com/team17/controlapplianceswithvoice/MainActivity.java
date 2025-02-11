@@ -1,5 +1,6 @@
 package com.team17.controlapplianceswithvoice;
 
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -39,6 +41,13 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         requestPermission();
+
+        SharedPreferences pref = getSharedPreferences("darkMode", MODE_PRIVATE);
+        boolean check = pref.getBoolean("darkModeToggle", false);
+
+        if(check){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
 
         adapter = new RecyclerApplianceAdapter(this, new DashboardFragment()::changeName);
         dbHelper = new ApplianceDatabaseHelper(this);

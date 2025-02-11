@@ -1,5 +1,7 @@
 package com.team17.controlapplianceswithvoice;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -61,8 +63,17 @@ public class SettingsFragment extends Fragment {
         int nightMode = AppCompatDelegate.getDefaultNightMode();
         if (nightMode == AppCompatDelegate.MODE_NIGHT_YES) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            SharedPreferences pref = getActivity().getSharedPreferences("darkMode", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putBoolean("darkModeToggle", false);
+            editor.apply();
+
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            SharedPreferences pref = getActivity().getSharedPreferences("darkMode", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putBoolean("darkModeToggle", true);
+            editor.apply();
         }
     }
 }
