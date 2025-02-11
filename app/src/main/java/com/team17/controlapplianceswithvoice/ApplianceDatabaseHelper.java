@@ -77,7 +77,7 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // 4. Toggle Appliance Status
-    public int toggleApplianceStatus(int applianceId) {
+    public void toggleApplianceStatus(int applianceId) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cursor = db.query(TABLE_APPLIANCES, new String[]{COLUMN_STATUS}, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)}, null, null, null);
@@ -90,13 +90,12 @@ public class ApplianceDatabaseHelper extends SQLiteOpenHelper {
 
             int rowsUpdated = db.update(TABLE_APPLIANCES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(applianceId)});
             cursor.close();
-            return rowsUpdated;
+            return;
         }
 
         if (cursor != null) {
             cursor.close();
         }
-        return 0;
     }
 
     // 5. Fetch All Appliances

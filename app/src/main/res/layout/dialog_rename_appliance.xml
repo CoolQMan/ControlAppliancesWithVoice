@@ -44,8 +44,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end"
         android:paddingTop="12dp">
+
+        <!-- Delete Button (Aligned to the Left) -->
+        <Button
+            android:id="@+id/btn_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="Delete"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:elevation="4dp"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="start"/>
+
+        <!-- Spacer View to push other buttons to the right -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <!-- Cancel Button -->
         <Button
@@ -72,4 +90,5 @@
             android:paddingVertical="8dp"
             android:elevation="4dp" />
     </LinearLayout>
+
 </LinearLayout>

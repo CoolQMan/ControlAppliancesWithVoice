@@ -60,8 +60,10 @@ public class DashboardFragment extends Fragment {
         EditText etApplianceName = customView.findViewById(R.id.et_appliance_name);
         Button btn_cancel = customView.findViewById(R.id.btn_cancel);
         Button btn_ok = customView.findViewById(R.id.btn_ok);
+        Button btn_delete = customView.findViewById(R.id.btn_delete);
 
         etApplianceID.setVisibility(View.GONE);
+        btn_delete.setVisibility(View.VISIBLE);
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -103,6 +105,15 @@ public class DashboardFragment extends Fragment {
         });
         // Set up the Cancel button
         btn_cancel.setOnClickListener(v -> dialog.dismiss());
+        btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbHelper.removeAppliance(dbHelper.getAllAppliances().get(position).getApplianceId());
+                adapter.arrayList = dbHelper.getAllAppliances();
+                adapter.notifyDataSetChanged();
+                dialog.dismiss();
+            }
+        });
     }
 
     public void loadFromDatabase(){

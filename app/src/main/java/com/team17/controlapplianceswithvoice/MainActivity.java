@@ -58,8 +58,6 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new DashboardFragment();
             } else if (item.getItemId() == R.id.menu_voice_command) {
                 selectedFragment = new VoiceFragment();
-            } else if (item.getItemId() == R.id.menu_logs) {
-                selectedFragment = new ConsoleFragment();
             } else if (item.getItemId() == R.id.menu_settings) {
                 selectedFragment = new SettingsFragment();
             }

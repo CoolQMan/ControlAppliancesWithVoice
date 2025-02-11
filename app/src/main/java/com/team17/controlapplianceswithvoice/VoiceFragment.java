@@ -23,6 +23,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class VoiceFragment extends Fragment {
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
@@ -160,24 +163,112 @@ public class VoiceFragment extends Fragment {
         speechRecognizer.stopListening();
     }
 
-    private void execVoiceCommand(String speechRecognize){
+    private void execVoiceCommand(String speechRecognize) {
+
+        Log.d("voiceResult", "Original: " + speechRecognize);
+
+        // Convert number words to digits
+        speechRecognize = convertNumbersToDigits(speechRecognize);
+        Log.d("voiceResult", "Converted: " + speechRecognize);
+
         String[] speechArray = speechRecognize.split(" ");
         String firstWord = speechArray[0].toLowerCase();
-        if(!firstWord.equals("turn") && !firstWord.equals("switch")){
-            mic_button.setColorFilter(ContextCompat.getColor(context, R.color.red), android.graphics.PorterDuff.Mode.SRC_IN);
-            // Change the text to "Invalid Command"
-            mic_status.setText("Invalid Command");
-            // Wait for a few seconds, then reset the mic icon and text
-            mic_button.postDelayed(() -> {
-                // Reset the mic icon tint to original color (or default)
-                mic_button.clearColorFilter(); // Removes the color filter (reverts to original)
-                // Reset the text to original
-                mic_status.setText("Tap to Start Listening");
-            }, 3000); // Delay of 3 seconds (3000 milliseconds)
+
+        // Validate the first word (it should be "turn" or "switch")
+        if (!firstWord.equals("turn") && !firstWord.equals("switch")) {
+            showInvalidCommand();
             return;
         }
+
+        // Ensure the command has enough words (e.g., "turn on light 1")
+        if (speechArray.length < 3) {
+            showInvalidCommand();
+            return;
+        }
+
+        String action = speechArray[1].toLowerCase(); // "on" or "off"
+        String applianceName = speechRecognize.substring(speechRecognize.indexOf(action) + action.length()).trim(); // Extract appliance name
+
+        // Fetch appliances from the database
         ArrayList<ApplianceModel> arrayList = dbHelper.getAllAppliances();
 
+        boolean applianceExists = false;
+        int appliancePosition = -1; // Variable to store position
+
+        for (int i = 0; i < arrayList.size(); i++) {
+            if (arrayList.get(i).getApplianceName().equalsIgnoreCase(applianceName)) {
+                Log.d("voiceResult", "Name: " + arrayList.get(i).getApplianceName());
+                applianceExists = true;
+                appliancePosition = i; // Store the position of the appliance
+                break;
+            }
+        }
+
+        if (applianceExists) {
+            updateApplianceStatus(appliancePosition, action, arrayList);
+        } else {
+            showInvalidCommand();
+        }
+    }
+
+    // Function to handle invalid commands
+    private void showInvalidCommand() {
+        mic_button.setColorFilter(ContextCompat.getColor(context, R.color.red), android.graphics.PorterDuff.Mode.SRC_IN);
+        mic_status.setText("Invalid Command");
+
+        mic_button.postDelayed(() -> {
+            mic_button.clearColorFilter();
+            mic_status.setText("Tap to Start Listening");
+        }, 3000);
+    }
+
+    // Function to update appliance status (to be implemented later)
+    private void updateApplianceStatus(int position, String action, ArrayList<ApplianceModel> arrayList) {
+
+        if((action.equals("on") && !arrayList.get(position).getStatus()) || (action.equals("off") && arrayList.get(position).getStatus())){
+
+            dbHelper.toggleApplianceStatus(arrayList.get(position).getApplianceId());
+
+            // Change icon color to green and set status text
+            mic_button.setColorFilter(ContextCompat.getColor(context, R.color.green), android.graphics.PorterDuff.Mode.SRC_IN);
+            mic_status.setText("Command Sent");
+
+
+            // Reset UI after 3 seconds
+            mic_button.postDelayed(() -> {
+                mic_button.clearColorFilter(); // Reset color
+                mic_status.setText("Tap to Start Listening");
+            }, 3000);
+        } else{
+            showInvalidCommand();
+        }
+    }
+
+    private String convertNumbersToDigits(String input) {
+        Map<String, String> numberMap = new HashMap<>();
+        numberMap.put("one", "1");
+        numberMap.put("two", "2");
+        numberMap.put("three", "3");
+        numberMap.put("four", "4");
+        numberMap.put("five", "5");
+        numberMap.put("six", "6");
+        numberMap.put("seven", "7");
+        numberMap.put("eight", "8");
+        numberMap.put("nine", "9");
+        numberMap.put("zero", "0");
+
+        String[] words = input.split(" ");
+        StringBuilder result = new StringBuilder();
+
+        for (String word : words) {
+            if (numberMap.containsKey(word.toLowerCase())) {
+                result.append(numberMap.get(word.toLowerCase())).append(" ");
+            } else {
+                result.append(word).append(" ");
+            }
+        }
+
+        return result.toString().trim();
     }
 
 
