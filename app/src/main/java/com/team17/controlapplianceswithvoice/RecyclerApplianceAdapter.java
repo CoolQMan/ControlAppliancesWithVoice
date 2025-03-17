@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,9 +42,19 @@ public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerAppli
             boolean state = appliance_switch.isChecked();
             arrayList.get(position).setStatus(state);
             databaseHelper.toggleApplianceStatus(arrayList.get(position).getApplianceId());
-            //TODO: send signal to STM for toggling appliance
+
+            // Send command via Bluetooth
+            BluetoothManager bluetoothManager = BluetoothManager.getInstance(context);
+            if (bluetoothManager.isConnected()) {
+                bluetoothManager.sendCommand(arrayList.get(position).getApplianceId(), state);
+            } else {
+                Toast.makeText(context, "Not connected to Bluetooth device", Toast.LENGTH_SHORT).show();
+                // Optional: revert switch if not connected
+                // appliance_switch.setChecked(!state);
+            }
         });
     }
+
 
     @Override
     public int getItemCount() {

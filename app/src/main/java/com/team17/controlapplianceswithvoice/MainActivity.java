@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     ApplianceDatabaseHelper dbHelper;
     RecyclerApplianceAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("darkMode", MODE_PRIVATE);
         boolean check = pref.getBoolean("darkModeToggle", false);
 
-        if(check){
+        if (check) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         }
 
@@ -74,6 +75,14 @@ public class MainActivity extends AppCompatActivity {
             // Load the selected fragment
             return loadFragment(selectedFragment);
         });
+        BluetoothManager bluetoothManager = BluetoothManager.getInstance(this);
+
+        // Reconnect to last used device if available
+        SharedPreferences sharedPreferences = getSharedPreferences("bluetooth_prefs", MODE_PRIVATE);
+        String deviceAddress = sharedPreferences.getString("device_address", null);
+        if (deviceAddress != null && bluetoothManager.isBluetoothEnabled()) {
+            bluetoothManager.connectToDevice(deviceAddress);
+        }
     }
 
     // Helper method to load fragment dynamically
@@ -82,20 +91,21 @@ public class MainActivity extends AppCompatActivity {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.fragment_container, fragment);
             transaction.commit();
+            invalidateOptionsMenu(); // Refresh the menu
             return true;
         }
         return false;
     }
 
+
     @Override
     public void onBackPressed() {
-        if(bottomNavigationView.getSelectedItemId() != R.id.menu_dashboard){
+        if (bottomNavigationView.getSelectedItemId() != R.id.menu_dashboard) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.fragment_container, new DashboardFragment());
             transaction.commit();
             bottomNavigationView.setSelectedItemId(R.id.menu_dashboard);
-        }
-        else{
+        } else {
             super.onBackPressed();
         }
     }
@@ -103,10 +113,26 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.action_bar_menu, menu);
+
+        // Get current fragment
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+
+        // Hide/show menu items based on current fragment
+        if (currentFragment instanceof DashboardFragment) {
+            menu.findItem(R.id.refresh_button).setVisible(true);
+            menu.findItem(R.id.add_button).setVisible(true);
+            menu.findItem(R.id.bluetooth_status).setVisible(true);
+        } else {
+            menu.findItem(R.id.refresh_button).setVisible(false);
+            menu.findItem(R.id.add_button).setVisible(false);
+            menu.findItem(R.id.bluetooth_status).setVisible(true);
+        }
+
         return true;
     }
 
-    //refresh button implementation
+
+    //App bar buttons implementation
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         DashboardFragment dashboardFragment = (DashboardFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
@@ -177,14 +203,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            btn_ok.setOnClickListener(v ->{
+            btn_ok.setOnClickListener(v -> {
                 String newName = etApplianceName.getText().toString().trim();
                 int newID = Integer.parseInt(etApplianceID.getText().toString().trim());
                 if (!newName.isEmpty()) {
-                    if(!dbHelper.applianceExists(newName) && !dbHelper.applianceExists(newID)){
+                    if (!dbHelper.applianceExists(newName) && !dbHelper.applianceExists(newID)) {
                         dbHelper.addAppliance(new ApplianceModel(newID, newName, false));
                         dialog.dismiss();
-                    } else{
+                    } else {
                         Toast.makeText(this, "Name or ID already exists in database", Toast.LENGTH_SHORT).show();
                     }
 
@@ -197,13 +223,11 @@ public class MainActivity extends AppCompatActivity {
             btn_cancel.setOnClickListener(v -> dialog.dismiss());
 
             return true;
-        }
-
-
-        else {
+        } else {
             return super.onOptionsItemSelected(item);
         }
     }
+
     private boolean hasPermission() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     }
@@ -213,4 +237,18 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Disconnect Bluetooth when app is closed
+        BluetoothManager bluetoothManager = BluetoothManager.getInstance(this);
+        bluetoothManager.disconnect();
+    }
+    public void invalidateOptionsMenu() {
+        if (getSupportActionBar() != null) {
+            supportInvalidateOptionsMenu();
+        }
+    }
+
 }

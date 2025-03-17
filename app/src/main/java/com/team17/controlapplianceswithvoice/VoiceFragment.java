@@ -224,25 +224,42 @@ public class VoiceFragment extends Fragment {
 
     // Function to update appliance status (to be implemented later)
     private void updateApplianceStatus(int position, String action, ArrayList<ApplianceModel> arrayList) {
+        if((action.equals("on") && !arrayList.get(position).getStatus()) || (action.equals("off") && arrayList.get(position).getStatus())) {
+            int applianceId = arrayList.get(position).getApplianceId();
+            boolean newStatus = action.equals("on");
 
-        if((action.equals("on") && !arrayList.get(position).getStatus()) || (action.equals("off") && arrayList.get(position).getStatus())){
+            // Update database
+            dbHelper.toggleApplianceStatus(applianceId);
 
-            dbHelper.toggleApplianceStatus(arrayList.get(position).getApplianceId());
+            // Send command via Bluetooth
+            BluetoothManager bluetoothManager = BluetoothManager.getInstance(context);
+            if (bluetoothManager.isConnected()) {
+                // Format: "A1:ON" or "A1:OFF"
+                String command = "A" + applianceId + ":" + (newStatus ? "ON" : "OFF");
+                boolean commandSent = bluetoothManager.sendCommand(applianceId, newStatus);
+
+                if (!commandSent) {
+                    Toast.makeText(context, "Failed to send Bluetooth command", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(context, "Not connected to Bluetooth device", Toast.LENGTH_SHORT).show();
+            }
 
             // Change icon color to green and set status text
             mic_button.setColorFilter(ContextCompat.getColor(context, R.color.green), android.graphics.PorterDuff.Mode.SRC_IN);
             mic_status.setText("Command Sent");
-
 
             // Reset UI after 3 seconds
             mic_button.postDelayed(() -> {
                 mic_button.clearColorFilter(); // Reset color
                 mic_status.setText("Tap to Start Listening");
             }, 3000);
-        } else{
+        } else {
             showInvalidCommand();
         }
     }
+
+
 
     private String convertNumbersToDigits(String input) {
         Map<String, String> numberMap = new HashMap<>();
