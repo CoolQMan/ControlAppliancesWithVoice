@@ -46,7 +46,13 @@ public class RecyclerApplianceAdapter extends RecyclerView.Adapter<RecyclerAppli
             // Send command via Bluetooth
             BluetoothManager bluetoothManager = BluetoothManager.getInstance(context);
             if (bluetoothManager.isConnected()) {
-                bluetoothManager.sendCommand(arrayList.get(position).getApplianceId(), state);
+                // Format: "A1:ON" or "A1:OFF"
+                String command = "A" + arrayList.get(position).getApplianceId() + ":" + (state ? "ON" : "OFF");
+                boolean commandSent = bluetoothManager.sendCommand(arrayList.get(position).getApplianceId(), state);
+
+                if (!commandSent) {
+                    Toast.makeText(context, "Failed to send Bluetooth command", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(context, "Not connected to Bluetooth device", Toast.LENGTH_SHORT).show();
                 // Optional: revert switch if not connected
